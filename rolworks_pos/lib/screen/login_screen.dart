@@ -4,7 +4,26 @@ import 'package:rolworks_pos/network/api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rolworks_pos/app_utils/const.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  @override
+  void initState() {
+    _checkIfLoggedIn();
+    super.initState();
+  }
+
+  void _checkIfLoggedIn() async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    var token = localStorage.getString('token');
+    if (token != null) {
+      Navigator.pushNamed(context, "pos");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final emailController = TextEditingController();
@@ -68,6 +87,7 @@ class LoginScreen extends StatelessWidget {
                   ];
                   var res = await Network().authData(data, '/login');
                   var body = json.decode(res.body);
+                  print(body);
                   if (body['success']) {
                     SharedPreferences localStorage =
                         await SharedPreferences.getInstance();
@@ -76,7 +96,7 @@ class LoginScreen extends StatelessWidget {
                     // Push to new Route
                     Navigator.pushNamed(context, "pos");
                   } else {
-                    print(body['message']);
+                    print(body);
                   }
                 },
                 child: Text("Login"),

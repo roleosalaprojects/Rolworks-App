@@ -1,18 +1,19 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:rolworks_pos/network/api.dart';
 import 'package:rolworks_pos/app_utils/const.dart';
+import 'package:rolworks_pos/network/api.dart';
 import 'package:rolworks_pos/screen/side_menu.dart';
+import 'package:rolworks_pos/screen/items/show.dart';
 
-class POSScreen extends StatefulWidget {
-  const POSScreen({Key? key}) : super(key: key);
+class ItemScreen extends StatefulWidget {
+  const ItemScreen({Key? key}) : super(key: key);
 
   @override
-  _POSScreenState createState() => _POSScreenState();
+  _ItemScreenState createState() => _ItemScreenState();
 }
 
-class _POSScreenState extends State<POSScreen> {
+class _ItemScreenState extends State<ItemScreen> {
   final searchText = TextEditingController();
 
   List<String> _items = ['No Item/s Found'];
@@ -37,21 +38,19 @@ class _POSScreenState extends State<POSScreen> {
   }
 
   void _getItemSearch(String key) async {
-    Future.delayed(const Duration(milliseconds: 500), () async {
-      var item = await Network().getData("/items/search/$key");
-      var body = json.decode(item.body);
-      print(body);
-      setState(() {
-        _items = [];
-        _price = [];
-        _id = [];
-        for (var item in body) {
-          List<String> list = [];
-          _id.add(item["id"]);
-          _items.add(item["name"]);
-          _price.add(item["price"].toString());
-        }
-      });
+    var item = await Network().getData("/items/search/$key");
+    var body = json.decode(item.body);
+    print(body);
+    setState(() {
+      _items = [];
+      _price = [];
+      _id = [];
+      for (var item in body) {
+        List<String> list = [];
+        _id.add(item["id"]);
+        _items.add(item["name"]);
+        _price.add(item["price"].toString());
+      }
     });
   }
 
@@ -64,8 +63,8 @@ class _POSScreenState extends State<POSScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBarDef("Items"),
       drawer: NavDrawer(),
-      appBar: AppBarDef("Rolworks POS"),
       body: Container(
         child: Column(
           children: [
@@ -93,9 +92,18 @@ class _POSScreenState extends State<POSScreen> {
                   return OutlineButton(
                       borderSide: BorderSide.none,
                       onPressed: () {
-                        print(_id[index]);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ItemShowScreen(
+                              id: _id[index].toString(),
+                              name: _items[index],
+                            ),
+                          ),
+                        );
                       },
                       child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           CircleAvatar(
                             child: Text(_items[index][0]),
@@ -103,12 +111,14 @@ class _POSScreenState extends State<POSScreen> {
                           SizedBox(
                             width: 10,
                           ),
-                          Text(_items[index]),
-                          SizedBox(
-                            width: 10.0,
-                            child: Text(" - "),
+                          Flexible(
+                            child: Text(_items[index]),
                           ),
-                          Text(_price[index]),
+                          // SizedBox(
+                          //   width: 10.0,
+                          //   child: Text(" - "),
+                          // ),
+                          // Text(_price[index]),
                         ],
                       ));
                 },
